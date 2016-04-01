@@ -1,0 +1,34 @@
+#!/bin/bash
+
+
+find . -name "*X0*" -exec dirname {} >> list \;
+
+sed 's/.\///' list >> list2
+
+while read -r line
+do
+    name=$line
+    echo $name
+    if [ -e $name"_bgs.tif" ]
+    then
+        echo "$name already processed"
+    elif [ -e $name".tif" ]
+    then
+        echo "Processing $name"
+        sed -n 1,12p $HOME/git/cardiacStretch/BGSTemplate.js > script_.js
+        echo "imp = IJ.openImage(\""`pwd`"/"$name".tif\");" >> script_.js
+        sed -n 14,18p $HOME/git/cardiacStretch/BGSTemplate.js > script_.js
+        echo "IJ.saveAs(\"Tiff\", \""`pwd`"/"$name"_bgs.tif\");" >> script_.js
+        sed -n 20,23p $HOME/git/cardiacStretch/BGSTemplate.js > script_.js
+        # /home/brian/fiji/ImageJ-linux64 script_.js
+    else
+        echo "Convert raw data first!!!"
+    fi
+done < list2
+
+if [ -e script_.js ]
+then
+    echo "cleanup scripts"
+    #rm script_.js
+fi
+
