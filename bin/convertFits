@@ -1,3 +1,0 @@
-#!/bin/bash
-
-convert -colorspace Gray -define dcm:display-range=reset original.FIT -auto-level -format TIFF -depth 16 output.tif

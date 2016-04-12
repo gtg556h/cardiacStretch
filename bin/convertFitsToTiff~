@@ -1,0 +1,45 @@
+#!/bin/bash
+
+# This script searches current directory for any basename.tif (that does NOT contain sequence bgs),
+# checks for existence of file basename_bgs.tif, and, if it does not exist, opens basename.tif
+# in imagej, runs stackreg, and saves the processed image as basename_bgs.tif
+
+# Make sure a proper alias for fiji is established!!!
+
+ls | grep -v bgs | grep tif > list
+
+alias fiji=/home/b
+
+#find . -name "*X0*" -exec dirname {} >> list \;
+# ls | grep -v bgs | grep tif
+# sed 's/.\///' list >> list2
+
+while read -r line
+do
+    basename=`echo $line | sed 's/\.tif//'`
+    echo $basename 
+    if [ -e $basename"_bgs.tif" ]
+    then
+        echo "$name already processed"
+    elif [ -e $basename".tif" ]
+    then
+        echo "Processing $name"
+        sed -n 1,12p $HOME/git/cardiacStretch/bin/BGSTemplate.js > script_.js
+        echo "imp = IJ.openImage(\""`pwd`"/"$basename".tif\");" >> script_.js
+        sed -n 14,18p $HOME/git/cardiacStretch/bin/BGSTemplate.js >> script_.js
+        echo "IJ.saveAs(\"Tiff\", \""`pwd`"/"$basename"_bgs.tif\");" >> script_.js
+        sed -n 20,23p $HOME/git/cardiacStretch/bin/BGSTemplate.js >> script_.js
+        /home/brian/fiji/ImageJ-linux64 script_.js
+        #fiji script_.js
+    else
+        echo "Ummm, filenames not matching what is expected!!!"
+    fi
+done < list
+
+if [ -e script_.js ]
+then
+    echo "cleanup scripts"
+    rm script_.js
+    rm list
+fi
+
