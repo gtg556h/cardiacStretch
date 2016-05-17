@@ -24,26 +24,49 @@ do
         echo "Processing $basename"
         # ls | grep $basename
         
-        sed -n 1,15p $HOME/git/cardiacStretch/bin/convertFitsTemplate.js > script_.js
+        sed -n 1,9p $HOME/git/cardiacStretch/bin/convertFitsTemplate.js > script_.js
         
-        ls -d -1 $PWD/** | grep "$basename.*.fits" | sed 's/\(.*\)/imp = IJ.openImage(\"\1\");/' >> script_.js
+        #ls -d -1 $PWD/** | grep "$basename.*.fits" | sed $'s/\(.*\)/imp = imp = IJ.openImage(\"\1\");\\\nimp.show();/' >> script_.js
+        ls -d -1 $PWD/** | grep "$basename.*.fits" | sed 's/\(.*\)/imp = IJ.openImage(\"\1\");/' > list2
+
+        while read -r line2
+        do
+            echo $line2 >> script_.js
+            echo $'imp.show();\n' >> script_.js
+
+        done < list2
+
+        ls | grep "$basename.*.fits" > list3
+        nextline="IJ.run(\"Concatenate...\", \" title=[Concatenated Stacks] "
+        x=0
+        while read -r line2
+        do
+            ((x++))
+            nextline="$nextline image$x=$line2"
+        done < list3
+
+        ((x++))
+        nextline="$nextline image$x=[-- None --]\");"
+
+        echo $nextline >> script_.js
+
+        sed -n 30,39p $HOME/git/cardiacStretch/bin/convertFitsTemplate.js >> script_.js
+
+        echo "IJ.saveAs(imp, \"Tiff\", \"$PWD/$basename.tif\");" >> script_.js
         
-        
-        echo "imp = IJ.openImage(\""`pwd`"/"$basename".tif\");" >> script_.js
-        sed -n 14,18p $HOME/git/cardiacStretch/bin/BGSTemplate.js >> script_.js
-        echo "IJ.saveAs(\"Tiff\", \""`pwd`"/"$basename"_bgs.tif\");" >> script_.js
-        sed -n 20,23p $HOME/git/cardiacStretch/bin/BGSTemplate.js >> script_.js
+        sed -n 41,44p $HOME/git/cardiacStretch/bin/convertFitsTemplate.js >> script_.js
+
         /home/brian/fiji/ImageJ-linux64 script_.js
         #fiji script_.js
-    else
-        echo "Ummm, filenames not matching what is expected!!!"
     fi
 done < list
 
 if [ -e script_.js ]
 then
     echo "cleanup scripts"
-    rm script_.js
+    #rm script_.js
     rm list
+    rm list2
+    rm list3
 fi
 
