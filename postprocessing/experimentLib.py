@@ -20,6 +20,7 @@ class experiment(object):
         self.nominalSubFreq = params['nominalSubFreq']
         self.reactionTime = params['reactionTime']
         self.subEventTimeShift = params['subEventTimeShift']
+        self.maxStrain = params['maxStrain']
         self.title = params['title']
         self.experimentTitle = params['experimentTitle']
         
@@ -100,6 +101,68 @@ class experiment(object):
         plt.savefig(self.experimentTitle + '.eps', dpi=160, facecolor='w')
         plt.show()
         
+
+    ###############################################
+    
+    def plotHistograms(self, measurementList, nRows, nColumns, figsize=(15,6), hspace=0.22, wspace=0.24):
+
+        nMeasurements = len(measurementList)
+
+        fig, axs = plt.subplots(nRows, nColumns, figsize=figsize, facecolor='w', edgecolor='k')
+
+        fig.subplots_adjust(hspace=0.22, wspace=0.24) 
+        axs = axs.ravel()
+        
+        tt = np.linspace(0,2*np.pi,1000)
+        yy = self.maxStrain * (0.5 - 0.5 * np.cos(tt))
+        
+        nBins = 10
+        bins = np.linspace(0,2*np.pi,nBins+1)
+        
+        
+        for i in range(nMeasurements):
+        
+            hist, rbins = np.histogram(2*np.pi*measurementList[i].subTheta[measurementList[i].cellIx], bins=bins)
+            widths = np.diff(bins)
+            scaling = 1/measurementList[i].cellIx.size
+            hist = hist*scaling
+            axs[i].bar(rbins[:-1], hist, widths)
+        
+            
+            axs[i].set_xlim([0,2*np.pi])
+            axs[i].set_xticks(np.linspace(0,2*np.pi,5))
+            axs[i].set_xticklabels(['0','',r"$\pi$",'',r"2$\pi$"])
+            axs[i].set_ylim([0,1])
+            axs[i].set_yticks(np.linspace(0,1,3))
+            
+            for tl in axs[i].get_yticklabels():
+                tl.set_color('b')
+        
+        
+            ax2 = axs[i].twinx()
+            ax2.plot(tt,yy,'r--')
+            ax2.set_yticks(np.linspace(0,self.maxStrain,4))
+            for tl in ax2.get_yticklabels():
+                tl.set_color('r')
+        
+        
+            if np.mod(i,nColumns)==0:
+                ax2.set_yticklabels([])
+                axs[i].set_ylabel(r"$p_{c}$", color='blue', fontsize=20)
+            elif np.mod(i,nColumns)==3:
+                axs[i].set_yticklabels([])
+                ax2.set_ylabel(r"$\varepsilon$", color='red', fontsize=20)
+            else:
+                axs[i].set_yticklabels([])
+                ax2.set_yticklabels([])
+        
+            if np.floor(i/nColumns)+1==nRows:
+                axs[i].set_xlabel(r"$\phi_{substrate}$", fontsize=16)
+                
+            #axs[i].hist( measurementList[i].subTheta[measurementList[i].cellIx],  bins=bins, normed=True)
+
+        plt.savefig(self.experimentTitle + '_histograms.eps', dpi=160, facecolor='w')
+        plt.show()
         
 
 

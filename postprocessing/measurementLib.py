@@ -85,8 +85,8 @@ class measurement(object):
     def hist_substratePhasesOnContraction(self):
         # Use this to get a histogram of substrate phases on initiation of cell contraction
 
-        plt.hist(self.subTheta[self.cellIx])
-        plt.show()
+        n, bins, patches = plt.hist(self.subTheta[self.cellIx])
+        return n, bins, patches
 
 
     #####################################################
