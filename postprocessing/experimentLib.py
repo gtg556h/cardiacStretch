@@ -2,6 +2,7 @@ import numpy as np
 import pdb
 import matplotlib.pyplot as plt
 import measurementLib
+from matplotlib.ticker import FormatStrFormatter
 
 
 
@@ -142,6 +143,7 @@ class experiment(object):
             ax2 = axs[i].twinx()
             ax2.plot(tt,yy,'r--')
             ax2.set_yticks(np.linspace(0,self.maxStrain,4))
+            ax2.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
             for tl in ax2.get_yticklabels():
                 tl.set_color('r')
         

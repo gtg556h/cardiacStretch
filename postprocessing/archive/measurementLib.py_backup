@@ -1,0 +1,125 @@
+import numpy as np
+import pdb
+import matplotlib.pyplot as plt
+
+
+
+
+class measurement(object):
+
+    def __init__(self, cellEvents, subEvents, cellFreq, subFreq, dt):
+
+        self.dt = dt
+        self.cellEvents = cellEvents
+        self.subEvents = subEvents
+        self.cellFreq = cellFreq
+        self.subFreq = subFreq
+        
+        # Preprocessing:
+        self.genTime()
+
+        self.cellIx = self.genIndices(self.cellEvents)
+        self.subIx = self.genIndices(self.subEvents)
+
+        self.cellTheta = self.phaseGen(self.cellIx, self.t)
+        self.subTheta = self.phaseGen(self.subIx, self.t)
+
+        #self.clipTime()
+        self.relativePhase()
+
+
+    ######################################################
+
+    def genTime(self):
+        self.t = np.arange(0, np.max([np.max(self.subEvents),np.max(self.cellEvents)]), self.dt)
+
+
+    ######################################################
+        
+    def genIndices(self, events):
+
+        ix = np.zeros(np.size(events))
+        
+        for i in range(0, np.size(events)):
+            ix[i] = int(np.argmin(np.abs(events[i] - self.t)))
+
+        return ix.astype(int)
+        
+
+    ######################################################
+    
+    def phaseGen(self,ix,t):
+        phase = np.zeros(t.shape)
+        ixDiff = np.diff(ix,n=1,axis=0)
+
+
+        
+        for ii in range(0,ix.shape[0]-1):
+            #phase[ix[ii,0],0] = 0
+            for jj in range(0,int(ixDiff[ii])+1):
+                phase[int(ix[ii])+jj] = float(jj)/float(ixDiff[ii])
+
+        return phase #, ixDiff
+
+
+    #####################################################
+    
+    def clipTime(self):
+        return 1
+
+
+    #####################################################
+    
+    def relativePhase(self):
+        self.dTheta = np.mod(self.cellTheta - self.subTheta, 1)
+
+        self.minIndex = int(np.max([np.min(self.cellIx), np.min(self.subIx)]))
+        self.maxIndex = int(np.min([np.max(self.cellIx), np.max(self.subIx)]))
+
+        self.dTheta2 = self.dTheta[self.minIndex:self.maxIndex]
+        self.t2 = self.t[self.minIndex:self.maxIndex]
+
+
+    #####################################################
+
+    def hist_substratePhasesOnContraction(self):
+        # Use this to get a histogram of substrate phases on initiation of cell contraction
+
+        bins = np.arange(0,1, 0.1)
+        n, bins, patches = plt.hist(self.subTheta[self.cellIx], bins=bins, normed=1, facecolor='green', alpha=0.5)
+                
+        plt.show()
+
+
+    #####################################################
+    
+    def rose_relativePhase(self):
+        # Rose plot of relative phase
+
+        N = 12
+
+    
+        theta = np.linspace(0.0, 2*np.pi, N, endpoint=False)
+        radii = np.zeros_like(theta)
+        a = 2*np.pi*self.subTheta[self.cellIx]
+
+        dtheta = 2*np.pi/N
+
+        for i in range(0,theta.size):
+            radii[i] = sum(1 for ii in a if ii > theta[i] and ii <= theta[i]+dtheta)/a.size
+            
+        width = 2*np.pi/N
+
+        #ax = plt.subplot(111, projection='polar')
+        #bars = ax.bar(theta, radii, width=width, bottom=0.0)
+
+        #plt.show()
+
+        return theta, radii, width
+
+
+
+
+
+
+
