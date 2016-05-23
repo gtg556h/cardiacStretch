@@ -22,8 +22,10 @@ class experiment(object):
         self.reactionTime = params['reactionTime']
         self.subEventTimeShift = params['subEventTimeShift']
         self.maxStrain = params['maxStrain']
+        self.cellNaturalFreq = params['cellNaturalFreq']
         self.title = params['title']
         self.experimentTitle = params['experimentTitle']
+        
         
 
         # If nonzero reaction time provided, substract from cellEvents:        
@@ -33,12 +35,13 @@ class experiment(object):
 
         self.computeCellFreq()
         self.computeSubFreq()
+        self.computeDelta()
 
         
     #############################################
 
     def genMeasurement(self, i):
-        return measurementLib.measurement(self.cellEvents[i], self.subEvents[i], self.cellFreq[i], self.subFreq[i], self.dt)
+        return measurementLib.measurement(self.cellEvents[i], self.subEvents[i], self.cellFreq[i], self.subFreq[i], self.cellNaturalFreq, self.dt, self.Delta[i])
 
     
     #############################################
@@ -66,7 +69,17 @@ class experiment(object):
                 self.subPeriods.append(np.diff(self.subEvents[i]))
                 if self.subPeriods[i].size != 0:
                     self.subFreq[i] = 1/np.mean(self.subPeriods[i])
-            
+
+
+    #############################################
+
+    def computeDelta(self):
+        self.Delta = np.zeros(self.n)
+
+        for i in range(0, self.n):
+            if self.subFreq[i] !=0:
+                self.Delta[i] = (self.subFreq[i] - self.cellNaturalFreq)/self.cellNaturalFreq
+        
 
     ##############################################
 
@@ -105,20 +118,22 @@ class experiment(object):
 
     ###############################################
     
-    def plotHistograms(self, measurementList, nRows, nColumns, figsize=(15,6), hspace=0.22, wspace=0.24):
+    def plotHistograms(self, measurementList, nRows, nColumns, figsize, hspace, wspace, hist_maxProbability=0.5):
 
         nMeasurements = len(measurementList)
 
         fig, axs = plt.subplots(nRows, nColumns, figsize=figsize, facecolor='w', edgecolor='k')
 
-        fig.subplots_adjust(hspace=0.22, wspace=0.24) 
+        fig.subplots_adjust(hspace=hspace, wspace=wspace) 
         axs = axs.ravel()
         
         tt = np.linspace(0,2*np.pi,1000)
         yy = self.maxStrain * (0.5 - 0.5 * np.cos(tt))
         
-        nBins = 10
+        nBins = 8
         bins = np.linspace(0,2*np.pi,nBins+1)
+
+        
         
         
         for i in range(nMeasurements):
@@ -128,13 +143,20 @@ class experiment(object):
             scaling = 1/measurementList[i].cellIx.size
             hist = hist*scaling
             axs[i].bar(rbins[:-1], hist, widths)
+
+            if self.cellNaturalFreq == 0:
+                print("Don't forget to update cellNaturalFreq")
         
             
             axs[i].set_xlim([0,2*np.pi])
             axs[i].set_xticks(np.linspace(0,2*np.pi,5))
             axs[i].set_xticklabels(['0','',r"$\pi$",'',r"2$\pi$"])
-            axs[i].set_ylim([0,1])
-            axs[i].set_yticks(np.linspace(0,1,3))
+            axs[i].set_ylim([0,hist_maxProbability])
+            axs[i].set_yticks(np.linspace(0,hist_maxProbability,3))
+            axs[i].yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+            #axs[i].set_title(r"$\Delta$=" + str(measurementList[i].Delta), fontsize=16)
+            axs[i].set_title(r"$\Delta$=" + '%.2f' % measurementList[i].Delta, fontsize=16)
+            
             
             for tl in axs[i].get_yticklabels():
                 tl.set_color('b')
@@ -151,7 +173,7 @@ class experiment(object):
             if np.mod(i,nColumns)==0:
                 ax2.set_yticklabels([])
                 axs[i].set_ylabel(r"$p_{c}$", color='blue', fontsize=20)
-            elif np.mod(i,nColumns)==3:
+            elif np.mod(i,nColumns)==nColumns-1:
                 axs[i].set_yticklabels([])
                 ax2.set_ylabel(r"$\varepsilon$", color='red', fontsize=20)
             else:

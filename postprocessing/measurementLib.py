@@ -7,13 +7,15 @@ import matplotlib.pyplot as plt
 
 class measurement(object):
 
-    def __init__(self, cellEvents, subEvents, cellFreq, subFreq, dt):
+    def __init__(self, cellEvents, subEvents, cellFreq, subFreq, cellNaturalFreq, dt, Delta):
 
         self.dt = dt
         self.cellEvents = cellEvents
         self.subEvents = subEvents
         self.cellFreq = cellFreq
         self.subFreq = subFreq
+        self.cellNaturalFreq = cellNaturalFreq
+        self.Delta = Delta
         
         # Preprocessing:
         self.genTime()
