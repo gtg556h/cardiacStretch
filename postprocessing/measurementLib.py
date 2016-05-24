@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 
 
-class measurement(object):
+class stretchedMeasurement(object):
 
     def __init__(self, cellEvents, subEvents, cellFreq, subFreq, cellNaturalFreq, dt, Delta):
 
@@ -54,8 +54,6 @@ class measurement(object):
         phase = np.zeros(t.shape)
         ixDiff = np.diff(ix,n=1,axis=0)
 
-
-        
         for ii in range(0,ix.shape[0]-1):
             #phase[ix[ii,0],0] = 0
             for jj in range(0,int(ixDiff[ii])+1):
@@ -93,13 +91,57 @@ class measurement(object):
 
     #####################################################
     
-    def rose_relativePhase(self):
-        # Rose plot of relative phase
-        return 1
+
+class unstretchedMeasurement(object):
+
+    def __init__(self, cellEvents, cellFreq, cellNaturalFreq, dt, startTime):
+
+        self.dt = dt
+        self.cellEvents = cellEvents
+        self.cellFreq = cellFreq
+        self.cellNaturalFreq = cellNaturalFreq
+        self.startTime = startTime
+        
+        # Preprocessing:
+        self.genTime()
+
+        self.cellIx = self.genIndices(self.cellEvents)
+        self.cellTheta = self.phaseGen(self.cellIx, self.t)
+
+        
+        #self.clipTime()
+        #self.relativePhase()
 
 
+    ######################################################
+
+    def genTime(self):
+        self.t = np.arange(0, np.max(self.cellEvents), self.dt)
 
 
+    ######################################################
 
+    def genIndices(self, events):
+
+        ix = np.zeros(np.size(events))
+        
+        for i in range(0, np.size(events)):
+            ix[i] = int(np.argmin(np.abs(events[i] - self.t)))
+
+        return ix.astype(int)
+        
+
+    ######################################################
+    
+    def phaseGen(self,ix,t):
+        phase = np.zeros(t.shape)
+        ixDiff = np.diff(ix,n=1,axis=0)
+        
+        for ii in range(0,ix.shape[0]-1):
+            #phase[ix[ii,0],0] = 0
+            for jj in range(0,int(ixDiff[ii])+1):
+                phase[int(ix[ii])+jj] = float(jj)/float(ixDiff[ii])
+
+        return phase #, ixDiff
 
 
