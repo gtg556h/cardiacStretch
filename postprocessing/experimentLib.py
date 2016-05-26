@@ -104,22 +104,35 @@ class experiment(object):
         
     ##############################################
     
-    def plotFrequencyErrorbars(self):
-
-        fig = plt.figure(figsize=(6,6))
-        fig.subplots_adjust(top=0.98, bottom=0.18, left = 0.14, right = 0.95)
+    def plotFrequencyErrorbars(self, figsize=(4.5,4.5), top=0.9, bottom=0.15, left=0.14, right=0.9, hspace=0.2, wspace=0.3):
+        
+        fig = plt.figure(figsize=figsize)
+        fig.subplots_adjust(top=top, bottom=bottom, left=left, right=right)
         ax1 = fig.add_subplot(111)
         ax1.plot(self.startTime, self.cellFreq, 'r.-', label='cell')
         ax1.errorbar(self.startTime, self.cellFreq, yerr=2*self.cellStd, fmt='o')
         ax1.plot(self.startTime, self.subFreq, 'b.-', label='substrate')
-        ax1.set_xticks(self.startTime)
-        labels = self.title
-        ax1.set_xticklabels(labels, rotation='vertical')
+
+        # y labels:
+        ax1.set_yticks(np.linspace(0,np.max([np.max(self.cellFreq),np.max(self.subFreq)]),3))
+        ax1.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+        
+        # X labels:
+        
+        #labels = self.title
+        #ax1.set_xticklabels(labels, rotation='vertical')
+
+        ax1.set_xlim([np.min(self.startTime)-2,np.max(self.startTime) + 2])
+        ax1.set_xticks(np.linspace(self.startTime[0],self.startTime[-1],4))
+        ax1.xaxis.set_major_formatter(FormatStrFormatter('%2d'))
+        ax1.set_xlabel('time (min)')
+
+
         ax1.set_ylabel('Frequency (Hz)')
-        ax1.set_ylim([0, 1.5 * np.max(np.max(self.subFreq), np.max(self.cellFreq))])
+        ax1.set_ylim([0, 1.3 * np.max(np.max(self.subFreq), np.max(self.cellFreq))])
         ax1.set_xlim([np.min(self.startTime) - 2, np.max(self.startTime) + 2])
-        legend = ax1.legend(loc='upper right', shadow=True)
-        plt.savefig(self.experimentTitle + '.eps', dpi=160, facecolor='w')
+        legend = ax1.legend(loc='upper left', shadow=True)
+        plt.savefig(self.experimentTitle + 'Frequencies.eps', dpi=160, facecolor='w')
         plt.show()
         
 
@@ -256,7 +269,7 @@ class experiment(object):
                 axs[i].set_yticklabels([])
         
             if np.floor(i/nColumns)+1==nRows:
-                axs[i].set_xlabel(r"$\phi_{substrate}$", fontsize=16)
+                axs[i].set_xlabel(r"$\tau$ (s)", fontsize=16)
                 
             #axs[i].hist( measurementList[i].subTheta[measurementList[i].cellIx],  bins=bins, normed=True)
 
@@ -325,7 +338,7 @@ class experiment(object):
                 axs[i].set_yticklabels([])
         
             if np.floor(i/nColumns)+1==nRows:
-                axs[i].set_xlabel(r"$\phi_{substrate}$", fontsize=16)
+                axs[i].set_xlabel(r"$\tau$ (s)", fontsize=16)
                 
             #axs[i].hist( measurementList[i].subTheta[measurementList[i].cellIx],  bins=bins, normed=True)
 

@@ -145,3 +145,13 @@ class unstretchedMeasurement(object):
         return phase #, ixDiff
 
 
+    def relativePhase(self, subTheta, subIx):
+        dTheta = np.mod(self.cellTheta - subTheta, 1)
+
+        minIndex = int(np.max([np.min(self.cellIx), np.min(subIx)]))
+        maxIndex = int(np.min([np.max(self.cellIx), np.max(subIx)]))
+
+        dTheta2 = dTheta[minIndex:maxIndex]
+        t2 = self.t[minIndex:maxIndex]
+
+        return dTheta2
