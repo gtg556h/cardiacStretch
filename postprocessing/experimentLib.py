@@ -42,7 +42,7 @@ class experiment(object):
     #############################################
 
     def genStretchedMeasurement(self, i):
-        return measurementLib.stretchedMeasurement(self.cellEvents[i], self.subEvents[i], self.cellFreq[i], self.subFreq[i], self.cellNaturalFreq, self.dt, self.Delta[i])
+        return measurementLib.stretchedMeasurement(self.cellEvents[i], self.subEvents[i], self.cellFreq[i], self.subFreq[i], self.cellNaturalFreq, self.dt, self.Delta[i], self.title[i])
 
 
     #############################################
