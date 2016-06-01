@@ -2,7 +2,7 @@ import numpy as np
 import pdb
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
-import measurementLib
+import measurementLib2 as measurementLib
 from matplotlib.ticker import FormatStrFormatter
 
 
@@ -42,13 +42,14 @@ class experiment(object):
     #############################################
 
     def genStretchedMeasurement(self, i):
-        return measurementLib.stretchedMeasurement(self.cellEvents[i], self.subEvents[i], self.cellFreq[i], self.subFreq[i], self.cellNaturalFreq, self.dt, self.Delta[i], self.title[i])
+
+        return measurementLib.stretchedMeasurement(self.cellEvents[i], self.cellFreq[i], self.cellNaturalFreq, self.dt, self.startTime[i], self.title[i], self.subEvents[i], self.subFreq[i], self.Delta[i])
 
 
     #############################################
     
     def genUnstretchedMeasurement(self, i):
-        return measurementLib.unstretchedMeasurement(self.cellEvents[i], self.cellFreq[i],  self.cellNaturalFreq, self.dt, self.startTime[i])
+        return measurementLib.unstretchedMeasurement(self.cellEvents[i], self.cellFreq[i],  self.cellNaturalFreq, self.dt, self.startTime[i], self.title[i])
 
     
     #############################################
