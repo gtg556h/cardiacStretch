@@ -29,7 +29,7 @@ class stretchedMeasurement(object):
 
         #self.clipTime()
         self.relativePhase()
-        self.relativePhaseVelocityVsRelativePhase()
+        #self.relativePhaseVelocityVsRelativePhase()
 
     ######################################################
 
@@ -77,65 +77,72 @@ class stretchedMeasurement(object):
         self.minIndex = int(np.max([np.min(self.cellIx), np.min(self.subIx)]))
         self.maxIndex = int(np.min([np.max(self.cellIx), np.max(self.subIx)]))
 
-        self.dTheta2 = self.dTheta[self.minIndex:self.maxIndex]
+        self.dTheta = self.dTheta[self.minIndex:self.maxIndex]
         self.t2 = self.t[self.minIndex:self.maxIndex]
+
+        self.dTheta_t = self.relativePhaseVelocity(self.dTheta, self.dt)
+
+        self.dTheta_t_bins, self.dTheta_t_dTheta = self.genRelativePhaseVelocityVsRelativePhase(self.dTheta, self.dTheta_t)
 
     #####################################################
 
-    def relativePhaseVelocity(self):
-        self.dTheta2_dt = np.diff(self.dTheta2)/self.dt
+    def relativePhaseVelocity(self, dTheta, dt):
 
-        for i in range(0,self.dTheta2_dt.size):
-            if self.dTheta2_dt[i]*self.dt > 0.5:
-                self.dTheta2_dt[i] = (self.dTheta2[i+1] - self.dTheta2[i] - 1)/self.dt
-            elif self.dTheta2_dt[i]*self.dt < - 0.5:
-                self.dTheta2_dt[i] = (self.dTheta2[i+1] - self.dTheta2[i] - 1)/self.dt
+        dTheta_t = np.diff(dTheta) / dt
+
+        for i in range(0, dTheta_t.size):
+            if dTheta_t[i] * dt > 0.5:
+                dTheta_t[i] = (dTheta[i+1] - dTheta[i] - 1) / dt
+            elif dTheta_t[i] * dt < -0.5:
+                dTheta_t[i] = (dTheta[i+1] - dTheta[i] + 1) / dt
+
+        return dTheta_t
 
     #######################################################
-        
-    def relativePhaseVelocityVsRelativePhase(self):
 
-        self.relativePhaseVelocity()
-        
-        nBins  = 100
+    def genRelativePhaseVelocityVsRelativePhase(self, dTheta, dTheta_t, nBins=100):
 
-        dTheta2 = self.dTheta2[:-1]
+        dTheta = dTheta[:-1]
 
-        bins = np.linspace(0,1,nBins+1)
-        dThetaRange = np.linspace(0,1,nBins+1)
-        
-        
-        
-        dTheta2_dt_accum = []
-        for i in range(0,nBins):
-            dTheta2_dt_accum.append([])
+        bins = np.linspace(np.min(dTheta), np.max(dTheta), nBins+1)
+
+        dTheta_t_accum = []
 
         for i in range(0,nBins):
-            set1 = np.zeros_like(dTheta2)
-            set2 = np.zeros_like(dTheta2)
-            set1[np.where(dTheta2>bins[i])]=1
-            set2[np.where(dTheta2<=bins[i+1])]=1
-            dTheta2_dt_accum[i]= self.dTheta2_dt[np.where(set1*set2==1)[0]]
-                
+            dTheta_t_accum.append([])
 
-        self.dTheta_dt_of_dTheta = np.zeros(len(dTheta2_dt_accum))
-        for i in range(0, len(dTheta2_dt_accum)):
-            if len(dTheta2_dt_accum[i]) == 0:
-               self.dTheta_dt_of_dTheta[i] = 0
+        for i in range(0, nBins):
+            set1 = np.zeros_like(dTheta)
+            set2 = np.zeros_like(dTheta)
+            set1[np.where(dTheta>bins[i])] = 1
+            set2[np.where(dTheta<=bins[i+1])] = 1
+            dTheta_t_accum[i] = dTheta_t[np.where(set1*set2==1)[0]]
+
+        dTheta_t_dTheta = np.zeros(len(dTheta_t_accum))
+        for i in range(0, len(dTheta_t_accum)):
+            if len(dTheta_t_accum[i]) == 0:
+                dTheta_t_dTheta[i] = np.nan
             else:
-               self.dTheta_dt_of_dTheta[i] = np.mean(dTheta2_dt_accum[i])
+                dTheta_t_dTheta[i] = np.mean(dTheta_t_accum[i])
 
-        self.dTheta_dt_phase = bins[0:-1]
+        dTheta_t_bins = bins[0:-1]
 
-        plt.plot(self.dTheta_dt_phase, self.dTheta_dt_of_dTheta)
-        plt.show()
+        dTheta_t_bins = np.delete(dTheta_t_bins, np.where(np.isnan(dTheta_t_dTheta)))
+        dTheta_t_dTheta = np.delete(dTheta_t_dTheta, np.where(np.isnan(dTheta_t_dTheta)))
+
+        return dTheta_t_bins, dTheta_t_dTheta
+                         
             
-
-
-
-
+            
+    #######################################################
         
+    def plotRelativePhaseVelocityVsRelativePhase(self):
 
+        self.dTheta_t_bins, self.dTheta_t_dTheta = self.genRelativePhaseVelocityVsRelativePhase(self.dTheta, self.dTheta_t)
+        
+        plt.plot(self.dTheta_t_bins, self.dTheta_t_dTheta)
+        plt.show()
+        
 
     #####################################################
 

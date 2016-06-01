@@ -346,6 +346,51 @@ class experiment(object):
         plt.show()
 
 
+    ##########################################################
+        
+
+    def plot_dTheta_t_of_dTheta(self, measurementList, min_dTheta_t, max_dTheta_t, nRows, nColumns, figsize, top=0.9, bottom=0.16, left=0.15, right=0.9, hspace=0.2, wspace=0.3):
+
+        nMeasurements = len(measurementList)
+
+        fig, axs = plt.subplots(nRows, nColumns, figsize=figsize, facecolor='w', edgecolor='k')
+        fig.subplots_adjust(top=top, bottom=bottom, left=left, right=right, hspace=hspace, wspace=wspace) 
+        axs = axs.ravel()
+
+        for i in range(nMeasurements):
+
+            axs[i].plot(measurementList[i].dTheta_t_bins, measurementList[i].dTheta_t_dTheta)
+
+            axs[i].set_xlim([np.min(measurementList[i].dTheta_t_bins), np.max(measurementList[i].dTheta_t_bins)])
+
+            #axs[i].set_xticks(np.linspace(0,tauMax,5))
+            #axs[i].set_xticklabels(['0','',tauMax/2,'',tauMax])
+            #axs[i].xaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+            
+            axs[i].set_ylim([min_dTheta_t, max_dTheta_t])
+            #axs[i].set_yticks(np.linspace(0,np.min([hist_maxProbability,1]),3))
+            #axs[i].yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+            #axs[i].set_title(r"$\Delta$=" + str(measurementList[i].Delta), fontsize=16)
+            #axs[i].set_title("Unstretched, t=%2d min" % measurementList[i].startTime, fontsize=16)
+            
+            
+            #
+            #if np.mod(i,nColumns)==0:
+            #    axs[i].set_ylabel(r"$p_{c}$", color='blue', fontsize=20)
+            #elif np.mod(i,nColumns)==nColumns-1:
+            #    axs[i].set_yticklabels([])
+            #else:
+            #    axs[i].set_yticklabels([])
+            #
+            #if np.floor(i/nColumns)+1==nRows:
+            #    axs[i].set_xlabel(r"$\tau$ (s)", fontsize=16)
+            #    
+            #axs[i].hist( measurementList[i].subTheta[measurementList[i].cellIx],  bins=bins, normed=True)
+
+        plt.savefig(self.experimentTitle + '_dTheta_t_of_dTheta.eps', dpi=160, facecolor='w')
+        plt.show()
+
+
 
 
 
