@@ -200,7 +200,7 @@ class stretchedMeasurement(measurement):
         fig.subplots_adjust(top=top, bottom=bottom, left=left, right=right)
         ax1 = fig.add_subplot(111)
         
-        ax1.plot(self.t2, self.dTheta2)#, t2, dtheta2, t3, dtheta3, t4, dtheta4)
+        ax1.plot(self.t2, self.dTheta)#, t2, dtheta2, t3, dtheta3, t4, dtheta4)
     
         ax1.set_ylim([0,1])
         ax1.set_yticks(np.linspace(0,1,3))

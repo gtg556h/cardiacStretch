@@ -360,31 +360,36 @@ class experiment(object):
 
         for i in range(nMeasurements):
 
-            axs[i].plot(measurementList[i].dTheta_t_bins, measurementList[i].dTheta_t_dTheta)
+            axs[i].plot(measurementList[i].dTheta_t_bins, measurementList[i].dTheta_t_dTheta, label="coupled")
+            axs[i].plot(measurementList[i].dTheta_t_bins, (measurementList[i].cellNaturalFreq - measurementList[i].subFreq)* np.ones_like(measurementList[i].dTheta_t_bins),'r', label="uncoupled")
 
             axs[i].set_xlim([np.min(measurementList[i].dTheta_t_bins), np.max(measurementList[i].dTheta_t_bins)])
 
             #axs[i].set_xticks(np.linspace(0,tauMax,5))
             #axs[i].set_xticklabels(['0','',tauMax/2,'',tauMax])
-            #axs[i].xaxis.set_major_formatter(FormatStrFormatter('%.2f'))
-            
+            axs[i].xaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+
+
             axs[i].set_ylim([min_dTheta_t, max_dTheta_t])
             #axs[i].set_yticks(np.linspace(0,np.min([hist_maxProbability,1]),3))
-            #axs[i].yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+            axs[i].yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
             #axs[i].set_title(r"$\Delta$=" + str(measurementList[i].Delta), fontsize=16)
-            #axs[i].set_title("Unstretched, t=%2d min" % measurementList[i].startTime, fontsize=16)
+            axs[i].set_title(r"$\Delta$=%.2f" % measurementList[i].Delta, fontsize=16)
             
-            
+            if i==0:
+                legend = axs[i].legend(loc='upper left', shadow=True)
             #
-            #if np.mod(i,nColumns)==0:
+            if np.mod(i,nColumns)==0:
             #    axs[i].set_ylabel(r"$p_{c}$", color='blue', fontsize=20)
+                axs[i].set_ylabel(r"$\frac{d}{dt}(\phi_{cell}-\phi_{sub})$")
             #elif np.mod(i,nColumns)==nColumns-1:
             #    axs[i].set_yticklabels([])
             #else:
             #    axs[i].set_yticklabels([])
             #
-            #if np.floor(i/nColumns)+1==nRows:
+            if np.floor(i/nColumns)+1==nRows:
             #    axs[i].set_xlabel(r"$\tau$ (s)", fontsize=16)
+                axs[i].set_xlabel(r"$\phi_{cell}-\phi_{sub}$")
             #    
             #axs[i].hist( measurementList[i].subTheta[measurementList[i].cellIx],  bins=bins, normed=True)
 
