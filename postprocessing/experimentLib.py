@@ -115,7 +115,8 @@ class experiment(object):
         ax1.plot(self.startTime, self.subFreq, 'b.-', label='substrate')
 
         # y labels:
-        ax1.set_yticks(np.linspace(0,np.max([np.max(self.cellFreq),np.max(self.subFreq)]),3))
+        ax1.set_ylim(0, 1.3*np.max([np.max(self.cellFreq), np.max(self.subFreq)]))
+        ax1.set_yticks(np.linspace(0,1.2*np.max([np.max(self.cellFreq),np.max(self.subFreq)]),3))
         ax1.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
         
         # X labels:
@@ -139,8 +140,10 @@ class experiment(object):
 
     ###############################################
     
-    def plotHistograms(self, measurementList, nRows, nColumns, figsize, top=0.9, bottom=0.16, left=0.15, right=0.9, hspace=0.2, wspace=0.3,  hist_maxProbability=0.5):
+    def plotSubstratePhaseHistograms(self, measurementList, nRows, nColumns, figsize, top=0.9, bottom=0.16, left=0.15, right=0.9, hspace=0.2, wspace=0.3,  hist_maxProbability=0.5):
+        # Plot histograms of substrate phase at time of contraction start:
 
+        
         nMeasurements = len(measurementList)
         fig, axs = plt.subplots(nRows, nColumns, figsize=figsize, facecolor='w', edgecolor='k')
         fig.subplots_adjust(top=top, bottom=bottom, left=left, right=right, hspace=hspace, wspace=wspace) 
@@ -163,7 +166,7 @@ class experiment(object):
                 print("Don't forget to update cellNaturalFreq")
             axs[i].set_xlim([0,2*np.pi])
             axs[i].set_xticks(np.linspace(0,2*np.pi,5))
-            axs[i].set_xticklabels(['0','',r"$\pi$",'',r"2$\pi$"])
+            axs[i].set_xticklabels(['0','',r"$\pi$",'',r"2$\pi$"], fontsize=20)
             axs[i].set_ylim([0,hist_maxProbability])
             axs[i].set_yticks(np.linspace(0,hist_maxProbability,3))
             axs[i].yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
@@ -172,6 +175,7 @@ class experiment(object):
             
             for tl in axs[i].get_yticklabels():
                 tl.set_color('b')
+                tl.set_fontsize(14)
         
             ax2 = axs[i].twinx()
             ax2.plot(tt,yy,'r--')
@@ -179,6 +183,7 @@ class experiment(object):
             ax2.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
             for tl in ax2.get_yticklabels():
                 tl.set_color('r')
+                tl.set_fontsize(14)
         
             if np.mod(i,nColumns)==0:
                 ax2.set_yticklabels([])
@@ -191,16 +196,16 @@ class experiment(object):
                 ax2.set_yticklabels([])
         
             if np.floor(i/nColumns)+1==nRows:
-                axs[i].set_xlabel(r"$\phi_{substrate}$", fontsize=16)
+                axs[i].set_xlabel(r"$\phi_{substrate}$", fontsize=24)
 
-        plt.savefig(self.experimentTitle + '_histograms.eps', dpi=160, facecolor='w')
+        plt.savefig(self.experimentTitle + '_substratePhaseHistograms.eps', dpi=160, facecolor='w')
         plt.show()
 
         
         ################################################
 
 
-    def stretchedTauHistogram(self, measurementList, nRows, nColumns, figsize, top=0.9, bottom=0.16, left=0.15, right=0.9, hspace=0.2, wspace=0.3,  hist_maxProbability=0.5, nBins=16):
+    def stretchedTauHistogram(self, measurementList, nRows, nColumns, figsize, top=0.9, bottom=0.16, left=0.15, right=0.9, hspace=0.2, wspace=0.3,  hist_maxProbability=0.5, nBins=16, tauMax=0):
 
         epsilon = 0.02
 
@@ -212,12 +217,15 @@ class experiment(object):
         fig.subplots_adjust(top=top, bottom=bottom, left=left, right=right, hspace=hspace, wspace=wspace) 
         axs = axs.ravel()
 
-        tauMax = 0
-        for i in range(nMeasurements):
-            if np.max(np.diff(measurementList[i].cellEvents)) > tauMax:
-                tauMax = np.max(np.diff(measurementList[i].cellEvents))
-            elif 1/measurementList[i].subFreq > tauMax:
-                tauMax = 1/measurementList[i].subFreq
+        if tauMax == 0:
+            for i in range(nMeasurements):
+                if np.max(np.diff(measurementList[i].cellEvents)) > tauMax:
+                    tauMax = np.max(np.diff(measurementList[i].cellEvents))
+                elif 1/measurementList[i].subFreq > tauMax:
+                    tauMax = 1/measurementList[i].subFreq
+                # Next case tends to only apply for modeled data.  verbose way of extending x-range...
+                elif 1.1/measurementList[i].cellNaturalFreq - 0.1/measurementList[i].subFreq > tauMax:
+                    tauMax = 1.1/measurementList[i].cellNaturalFreq - 0.1/measurementList[i].subFreq
                 
         bins = np.linspace(0,tauMax,nBins+1)
         
@@ -281,7 +289,7 @@ class experiment(object):
     ##########################################################
         
 
-    def unstretchedTauHistogram(self, measurementList, nRows, nColumns, figsize, top=0.9, bottom=0.16, left=0.15, right=0.9, hspace=0.2, wspace=0.3,  hist_maxProbability=0.5, nBins=16):
+    def unstretchedTauHistogram(self, measurementList, nRows, nColumns, figsize, top=0.9, bottom=0.16, left=0.15, right=0.9, hspace=0.2, wspace=0.3,  hist_maxProbability=0.5, nBins=16, filename=0, tauMax=0):
 
         epsilon = 0.02
 
@@ -290,11 +298,13 @@ class experiment(object):
         fig.subplots_adjust(top=top, bottom=bottom, left=left, right=right, hspace=hspace, wspace=wspace) 
         axs = axs.ravel()
 
-        tauMax = 0
-        for i in range(nMeasurements):
-            if 1.1*np.max(np.diff(measurementList[i].cellEvents)) > tauMax:
-                tauMax = 1.1*np.max(np.diff(measurementList[i].cellEvents))
-                
+
+    
+        if tauMax == 0:
+            for i in range(nMeasurements):
+                if 1.1*np.max(np.diff(measurementList[i].cellEvents)) > tauMax:
+                    tauMax = 1.1*np.max(np.diff(measurementList[i].cellEvents))
+                   
         bins = np.linspace(0,tauMax,nBins+1)
         
         for i in range(nMeasurements):
@@ -325,6 +335,7 @@ class experiment(object):
             axs[i].yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
             #axs[i].set_title(r"$\Delta$=" + str(measurementList[i].Delta), fontsize=16)
             axs[i].set_title("Unstretched, t=%2d min" % measurementList[i].startTime, fontsize=16)
+
             
             
             for tl in axs[i].get_yticklabels():
@@ -343,7 +354,9 @@ class experiment(object):
                 
             #axs[i].hist( measurementList[i].subTheta[measurementList[i].cellIx],  bins=bins, normed=True)
 
-        plt.savefig(self.experimentTitle + '_unstretchedTauHistograms.eps', dpi=160, facecolor='w')
+        if filename==0:
+            filename = self.experimentTitle + '_unstretchedTauHistograms.eps'
+        plt.savefig(filename, dpi=160, facecolor='w')
         plt.show()
 
 
